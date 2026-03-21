@@ -4,7 +4,7 @@
   <version>0.0.1</version>
   <description>ROS 2 control package for Piper robot arm</description>
 
-  <maintainer email="user@example.com">User</maintainer>
+  <maintainer email="code.hesed@gmail.com">CodeHesed</maintainer>
   <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_python</buildtool_depend>

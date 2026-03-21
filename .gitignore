@@ -216,6 +216,6 @@ __marimo__/
 .streamlit/secrets.toml
 
 # Build Results
-logs/
+log/
 build/
-bin/
+install/
