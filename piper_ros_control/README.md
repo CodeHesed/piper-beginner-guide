@@ -1,85 +1,125 @@
-# Piper ROS Control Package
+# Piper ROS 2 Control Package 
 
-This is a ROS 2 package for controlling the Piper robot arm. It provides nodes for robot control, launch files for different configurations, and demo scripts.
+This package provides a simple and practical ROS 2 interface for controlling the Piper robot arm.
+It includes controller nodes, launch configurations, and demo scripts to help you quickly start interacting with the robot.
+
+This package is designed to be used together with the official
+[AgileX Piper ROS driver](https://github.com/agilexrobotics/piper_ros).
+
+---
 
 ## Package Structure
 
 ```
 piper_ros_control/
-├── package.xml              # ROS package metadata
-├── setup.py                # Python package configuration
+├── package.xml
+├── setup.py
+├── setup.cfg
 ├── resource/
-│   └── piper_ros_control    # Package resource file
-└── piper_ros_control/      # Python package module
-    ├── __init__.py
+│   └── piper_ros_control
+└── piper_ros_control/
     ├── nodes/
-    │   ├── piper_controller.py               # Main controller node
-    │   └── piper_ctrl_single_custom_node.py  # Single custom control node
+    │   ├── piper_controller.py
+    │   └── piper_ctrl_single_custom_node.py
     ├── launch/
-    │   ├── start_single_piper.launch.py      # Launch single robot
-    │   └── start_dual_piper.launch.py        # Launch dual robots
+    │   ├── start_single_piper.launch.py
+    │   └── start_dual_piper.launch.py
     └── demos/
-        └── keyboard_control.py                # Keyboard control demo
+        └── keyboard_control.py
 ```
 
-## Dependencies
+---
 
-- ROS 2 Foxy or newer
-- rclpy
-- ros2_control
-- ros2_controllers
-- robot_state_publisher
-- joint_state_publisher
+## Requirements
+
+* Ubuntu 22.04
+* ROS 2 Humble
+* [piper_ros (AgileX driver)](https://github.com/agilexrobotics/piper_ros)
+
+---
 
 ## Usage
 
-### Building the Package
+### 1. Build
 
 ```bash
-colcon build --packages-select piper_ros_control
+colcon build
+source install/setup.bash
 ```
 
-### Running Nodes
+---
+
+### 2. Launch the Robot
+
+Before launching, make sure the CAN interface is activated:
 
 ```bash
-# Controller node
-ros2 run piper_ros_control piper_controller
-
-# Single custom control node
-ros2 run piper_ros_control piper_ctrl_single
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+bash /path/to/piper_ros/piper_ros/can_activate.sh can-piper 1000000
 ```
 
-### Launch Files
+Then launch the robot:
 
 ```bash
-# Launch single Piper robot
-ros2 launch piper_ros_control start_single_piper.launch.py
-
-# Launch dual Piper robots
-ros2 launch piper_ros_control start_dual_piper.launch.py
+ros2 launch piper_ros_control start_single_piper.launch.py can_port:=can-piper
 ```
 
-### Demos
+---
+
+### 3. Keyboard Control Demo
+
+Control the robot interactively using your keyboard on a different terminal:
 
 ```bash
-# Run keyboard control demo
 ros2 run piper_ros_control keyboard_control
 ```
 
+This demo is useful for:
+
+* Testing basic motion
+* Understanding how commands are sent to the controller
+* Quick manual control without writing additional code
+
+---
+
 ## Nodes
 
-- `piper_controller.py`: Main controller node for Piper robot arm
-- `piper_ctrl_single_custom_node.py`: Single robot custom control node that is made to control robot speed
+### `piper_controller.py`
+
+Main controller node for the Piper robot arm.
+Handles communication between ROS 2 and the robot hardware.
+⭐ Understanding this code will help catching the concept of controlling a piper arm.
+
+---
+
+### `piper_ctrl_single_custom_node.py`
+
+A custom control node for a single robot setup to add speed control.
+
+---
 
 ## Launch Files
 
-- `start_single_piper.launch.py`: Launch configuration for single Piper robot
-- `start_dual_piper.launch.py`: Launch configuration for dual Piper robots
+### `start_single_piper.launch.py`
 
-## Demos
+Launch configuration for controlling a single Piper robot and visualizing it's current status on RViz.
 
-- `keyboard_control.py`: Interactive keyboard control demo
+### `start_dual_piper.launch.py`
 
-## License
+Launch configuration for controlling two Piper robots simultaneously (TBD).
+
+---
+
+## 🎮 Demos
+
+### `keyboard_control.py`
+
+A simple interactive demo for controlling the robot via keyboard input.
+⭐ This code will help you understand how the `PiperController` node works in practice.
+
+---
+
+## 📄 License
 
 Apache License 2.0
