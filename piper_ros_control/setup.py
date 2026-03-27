@@ -10,15 +10,13 @@ python_version = f'{sys.version_info.major}.{sys.version_info.minor}'
 setup(
     name=package_name,
     version='0.0.1',
-    packages=[package_name, package_name + '.nodes',  package_name + '.demos'],
+    packages=[package_name, package_name + '.nodes',  package_name + '.demos', package_name + '.utils'],
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'),
-            glob('piper_ros_control/launch/*.launch.py')),
-        # (os.path.join('share', package_name, 'demos'),
-        #     glob('piper_ros_control/demos/*.py')),
+            glob('piper_ros_control/launch/*.launch.py'))
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -29,8 +27,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'piper_single_custom_ctrl = piper_ros_control.nodes.piper_ctrl_single_custom_node:main',
-            'keyboard_control = piper_ros_control.demos.keyboard_control:main'
+            'piper_single_custom_ctrl = piper_ros_control.nodes.piper_ctrl_single_custom_node:main'
         ],
     },
 )

@@ -44,8 +44,7 @@ from pathlib import Path
 import sys
 
 # --- Import Setup ---
-project_root = Path(__file__).parent.parent.parent
-sys.path.append(str(project_root / 'src'))
+from piper_ros_control.utils.ik_solver import Arm_IK
 
 # ==========================================
 #          Piper Physical Traits
@@ -131,6 +130,9 @@ class PiperController(Node):
 
         # Debug option for printing
         self.debug = debug
+
+        # Define the IK solver
+        self.ik_solver = Arm_IK()
 
         # Gripper Constants
         self.MAX_OPENING = MAX_OPENING   # Fully open (m)
@@ -377,6 +379,7 @@ class PiperController(Node):
                      gripper: Optional[float] = None) -> bool:
         """
         Move end-effector to Cartesian pose.
+        Uses IK solver, since the arm firmware only succeeds joint space control for some poses.
 
         Args:
             x, y, z: Position (meters)
@@ -384,27 +387,27 @@ class PiperController(Node):
             gripper: Optional gripper position override
         """
 
-        msg = PosCmd()
-        msg.x = float(x)
-        msg.y = float(y)
-        msg.z = float(z)
-        msg.roll = float(np.radians(roll))
-        msg.pitch = float(np.radians(pitch))
-        msg.yaw = float(np.radians(yaw))
+        x = float(x)
+        y = float(y)
+        z = float(z)
+        roll = float(np.radians(roll))
+        pitch = float(np.radians(pitch))
+        yaw = float(np.radians(yaw))
         
         # If gripper not specified, use current status
         if gripper is not None:
-            msg.gripper = float(gripper)
+            gripper_input = float(gripper)
             self._gripper_status.target_position = float(gripper)
         else:
             with self._state_lock:
-                msg.gripper = self._gripper_status.target_position
+                gripper_input = self._gripper_status.target_position
 
-        msg.mode1 = 0
-        msg.mode2 = 0
-
-        self._pos_cmd_pub.publish(msg)
-
+        sol_q, _, success = self.ik_solver.get_ik_solution(x, y, z, roll, pitch, yaw)
+        if not success:
+            self.get_logger().warn("Collision expected at target pose, aborting move command.")
+            return False
+        
+        self.move_joints(sol_q, gripper=gripper_input)
         if (self.debug):
             self.get_logger().info(f"Moving gripper base to x={x:.4f}, y={y:.4f}, z={z:.4f},"
                                     f" roll={roll:.1f}, pitch={pitch:.1f}, yaw={yaw:.1f}")

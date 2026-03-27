@@ -35,6 +35,7 @@ piper_ros_control/
 * Ubuntu 22.04
 * ROS 2 Humble
 * [piper_ros (AgileX driver)](https://github.com/agilexrobotics/piper_ros)
+* Conda environment forged with `pinocchio=3.6.0` and `casadi` (For details, checkout **section 3.1**)
 
 ---
 
@@ -69,10 +70,27 @@ ros2 launch piper_ros_control start_single_piper.launch.py can_port:=can-piper
 
 ### 3. Keyboard Control Demo
 
+`CAUTION! TO USE THE KEYBOARD DEMO, A CONDA ENVIRONMENT IS REQUIRED DUE TO DEPENDENCIES`
+
+## 3.1. Keyboard Control Demo Set Up (One-time)
+
+Create a conda environment for the control demo.
+
+```bash
+conda create -n piper_beginner_guide python=3.10
+conda activate piper_beginner_guide
+conda install pinocchio=3.6.0 casadi -c conda-forge
+conda deactivate
+```
+
+## 3.2. Keyboard Control Demo Run
+
 Control the robot interactively using your keyboard on a different terminal:
 
 ```bash
-ros2 run piper_ros_control keyboard_control
+source install/setup.bash
+conda activate piper_controller
+python3 piper_ros_control/demos/keyboard_control.py
 ```
 
 This demo is useful for:
@@ -90,6 +108,7 @@ This demo is useful for:
 Main controller node for the Piper robot arm.
 Handles communication between ROS 2 and the robot hardware.
 ⭐ Understanding this code will help catching the concept of controlling a piper arm.
+⭐⭐ Currently uses an IK solver for position command due to issues caused by recent firmware updates.
 
 ---
 

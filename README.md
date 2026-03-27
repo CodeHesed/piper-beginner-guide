@@ -13,38 +13,7 @@ piper_beginner_guide/
 └── piper_ros_control/      # Custom ROS 2 Humble package for robot control
 ```
 
-## How to use
-
-### Build and requirement
-
-Build the package and source the install file. This may be done only once.
-I recommend placing the [piper_ros2-humble](https://github.com/agilexrobotics/piper_ros/tree/humble) package in this workspace.
-
-```bash
-colcon build
-```
-
-### Launching the robot arm
-
-On a bash terminal, activate the CAN interface first (requires the `piper_ros` driver):
-
-```bash
-source /opt/ros/humble/setup.bash
-source ./install/setup.bash
-bash /path/to/piper_ros/can_activate.sh can-piper 1000000
-ros2 launch piper_ros_control start_single_piper.launch.py  can_port:=can-piper
-```
-
-### Keyboard control demo
-
-This demo allows you to control the robot arm using keyboard inputs.
-It is useful for understanding how the `PiperController` node works in practice.
-
-```bash
-source /opt/ros/humble/setup.bash
-source ./install/setup.bash
-ros2 run piper_ros_control keyboard_control
-```
+## Piper Kinematics
 
 ### Kinematics visualization tool
 
@@ -58,3 +27,40 @@ This tool helps with:
 python3 ./piper_kinematics/piper_kinematics_visualizer.py
 ```
 
+## Piper ROS Control
+
+### Set up
+
+Build the package and source the install file. This may be done only once.
+**⚠️ I highly recommend placing the [piper_ros2-humble](https://github.com/agilexrobotics/piper_ros/tree/humble) package in this workspace. The examples below are all written assuming this.**
+
+```bash
+conda deactivate
+colcon build
+```
+
+Create a conda environment to actually use the piper controller. This may be also done only once.
+
+```bash
+conda create -n piper_beginner_guide python=3.10
+conda activate piper_beginner_guide
+conda install pinocchio=3.6.0 casadi -c conda-forge
+conda deactivate
+```
+
+### Launching the robot arm
+
+On a bash terminal, activate the CAN interface first (requires the `piper_ros` driver):
+
+```bash
+source scripts/launch_piper_arm.bash
+```
+
+### Keyboard control demo
+
+This demo allows you to control the robot arm using keyboard inputs.
+It is useful for understanding how the `PiperController` node works in practice.
+
+```bash
+source scripts/demo_piper_arm.bash
+```
