@@ -130,12 +130,22 @@ Launch configuration for controlling two Piper robots simultaneously (TBD).
 
 ---
 
-## 🎮 Demos
+## Demos
 
 ### `keyboard_control.py`
 
 A simple interactive demo for controlling the robot via keyboard input.
 ⭐ This code will help you understand how the `PiperController` node works in practice.
+
+---
+
+## Utils
+
+### `ik_solver.py`
+
+An IK solver to convert pose commands into joint states commands.
+⭐ The threshold to check errors of the IK solver can be set. 
+`PLEASE NOTICE THAT THE DEFAULT THRESHOLD IS QUITE HIGH (Position: 0.01m, Orientation: 0.15rad/8.6deg)`
 
 ---
 

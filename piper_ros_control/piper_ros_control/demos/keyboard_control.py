@@ -45,13 +45,16 @@ class KeyboardControl:
         self.step_xyz = 0.01   # 1cm per keypress (finer control)
         self.step_angle = 5.0  # 5 degrees per keypress
 
+        # Move success flag
+        self.move_success = True
+
     def print_status(self):
         """Prints current target state."""
         print(f"\r[STATUS] X:{self.cur_x:.3f} Y:{self.cur_y:.3f} Z:{self.cur_z:.3f} R:{self.cur_roll:.1f} P:{self.cur_pitch:.1f} Y:{self.cur_yaw:.1f} Grip:{'CLOSE' if self.gripper_is_closed else 'OPEN'}   ", end="")
 
     def move_robot(self):
         """Sends the command to the arm controller."""
-        self.arm.move_to_pose(
+        self.move_success = self.arm.move_to_pose(
             x=self.cur_x,
             y=self.cur_y,
             z=self.cur_z,
@@ -59,7 +62,7 @@ class KeyboardControl:
             pitch=self.cur_pitch,
             yaw=self.cur_yaw
         )
-    
+
     def run_safe_teleop(self):
         print("\n" + "="*50)
         print("SAFE TELEOP MODE STARTED")
@@ -91,14 +94,29 @@ class KeyboardControl:
             window = np.zeros((480, 640, 3), dtype=np.uint8)
             cv2.putText(window, "Keyboard Control", (50, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
+            # Color based on IK success
+            color = (0, 255, 0) if self.move_success else (0, 0, 255)
+
             # Add Text Overlay to Image for Feedback
             status_text1 = f"Arm Move Speed: {self.move_speed}%"
             status_text2 = f"  X:{self.cur_x:.3f} Y:{self.cur_y:.3f} Z:{self.cur_z:.3f}"
             status_text3 = f"  R:{self.cur_roll:.0f} P:{self.cur_pitch:.0f} Y:{self.cur_yaw:.0f}"
+            status_text4 = f"IK Solve Success: {'Yes' if self.move_success else 'No'}"
+            status_text5 = f"  IK Error Threshold - Pos:{self.arm.ik_solver.pos_thresh:.2f}m, Ori:{self.arm.ik_solver.ori_thresh * 180.0 / 3.14159:.1f}deg"
+            
             line_height = 30
-            cv2.putText(window, status_text1, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-            cv2.putText(window, status_text2, (10, 30 + line_height), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-            cv2.putText(window, status_text3, (10, 30 + 2*line_height), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+
+            cv2.putText(window, status_text1, (10, 30),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+            cv2.putText(window, status_text2, (10, 30 + line_height),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+            cv2.putText(window, status_text3, (10, 30 + 2*line_height),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+            cv2.putText(window, status_text4, (10, 30 + 4*line_height),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2),
+            cv2.putText(window, status_text5, (10, 30 + 5*line_height),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+
             cv2.imshow("Teleop View", window)
 
             # B. Wait for Key (This is the Safe Input Method)

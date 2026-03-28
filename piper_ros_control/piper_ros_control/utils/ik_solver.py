@@ -8,6 +8,13 @@ from pinocchio import casadi as cpin
 from pinocchio.robot_wrapper import RobotWrapper
 import os
 
+# Thresholds
+# Forward kinematics error thresholds for accepting IK solutions (which is not in the original code but added for better reliability)
+MAX_IK_ITER = 500     # Maximum iterations for the IK solver (original code: 50)
+TOL_IK = 1e-7          # Tolerance for IK convergence (original code: 1e-4)
+POS_THRESH = 0.01      # meters (~10 mm)
+ORI_THRESH = 0.15      # radians (~8.6 deg)
+
 def quaternion_from_euler(roll, pitch, yaw):
     cy = np.cos(yaw * 0.5)
     sy = np.sin(yaw * 0.5)
@@ -25,7 +32,7 @@ def quaternion_from_euler(roll, pitch, yaw):
 
 
 class Arm_IK:
-    def __init__(self):
+    def __init__(self, max_ik_iter=MAX_IK_ITER, tol_ik=TOL_IK, pos_thresh=POS_THRESH, ori_thresh=ORI_THRESH):
         np.set_printoptions(precision=5, suppress=True, linewidth=200)
 
         # -------------------------------
@@ -105,6 +112,11 @@ class Arm_IK:
             ],
         )
 
+        self.max_ik_iter = max_ik_iter
+        self.tol_ik = tol_ik
+        self.pos_thresh = pos_thresh
+        self.ori_thresh = ori_thresh
+
         self.opti = casadi.Opti()
         self.var_q = self.opti.variable(self.reduced_robot.model.nq)
         self.param_tf = self.opti.parameter(4, 4)
@@ -134,8 +146,8 @@ class Arm_IK:
         opts = {
             "ipopt": {
                 "print_level": 0,
-                "max_iter": 50,
-                "tol": 1e-4,
+                "max_iter": self.max_ik_iter,
+                "tol": self.tol_ik,
             },
             "print_time": False,
         }
@@ -182,8 +194,21 @@ class Arm_IK:
             )
 
             is_collision = self.check_self_collision(sol_q, gripper)
+            
+            # Fail if the solution is in collision
+            if is_collision:
+                return sol_q, tau_ff, False
 
-            return sol_q, tau_ff, not is_collision
+            # -------------------------------
+            # FK error check (acceptance threshold)
+            # -------------------------------
+            error_vec = self.error(sol_q, target_pose).full().flatten()
+
+            pos_err_norm = np.linalg.norm(error_vec[:3])
+            ori_err_norm = np.linalg.norm(error_vec[3:])
+            ik_converged = (pos_err_norm < self.pos_thresh) and (ori_err_norm < self.ori_thresh)
+
+            return sol_q, tau_ff, ik_converged
 
         except Exception as e:
             print(f"ERROR in convergence: {e}")

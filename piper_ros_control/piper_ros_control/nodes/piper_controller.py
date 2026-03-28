@@ -404,7 +404,7 @@ class PiperController(Node):
 
         sol_q, _, success = self.ik_solver.get_ik_solution(x, y, z, roll, pitch, yaw)
         if not success:
-            self.get_logger().warn("Collision expected at target pose, aborting move command.")
+            self.get_logger().warn("IK solution not found or collision expected at target pose. Thus, aborting move command.")
             return False
         
         self.move_joints(sol_q, gripper=gripper_input)
