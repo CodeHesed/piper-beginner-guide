@@ -31,7 +31,7 @@ python3 ./piper_kinematics/piper_kinematics_visualizer.py
 
 ### Set up
 
-Build the package and source the install file. This may be done only once.
+Build the package and source the install file. This may be done only once. <br>
 **⚠️ I highly recommend placing the [piper_ros2-humble](https://github.com/agilexrobotics/piper_ros/tree/humble) package in this workspace. The examples below are all written assuming this.**
 
 ```bash
@@ -58,8 +58,12 @@ source scripts/launch_piper_arm.bash
 
 ### Keyboard control demo
 
-This demo allows you to control the robot arm using keyboard inputs.
+This demo allows you to control the robot arm using keyboard inputs. <br>
 It is useful for understanding how the `PiperController` node works in practice.
+
+Currently uses an IK solver for position command due to issues caused by recent firmware updates. <br>
+**⚠️ PLEASE NOTICE THAT THE DEFAULT ERROR THRESHOLD FOR IK IS QUITE HIGH (Position: 0.01m, Orientation: 0.15rad/8.6deg). KEEP IN MIND THAT THIS MAY CAUSE SOME PRECISION ERRORS.**
+
 
 ```bash
 source scripts/demo_piper_arm.bash
