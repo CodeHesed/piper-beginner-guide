@@ -63,10 +63,9 @@ class KeyboardControl:
             yaw=self.cur_yaw
         )
 
-    def run_safe_teleop(self):
+    def run_keyboard_control(self):
         print("\n" + "="*50)
-        print("SAFE TELEOP MODE STARTED")
-        print("INSTRUCTIONS: Click the 'Teleop View' window to control.")
+        print("INSTRUCTIONS: Click the 'Keyboard Control' window to control.")
         print("-" * 50)
         print("  W/S      : +/- X")
         print("  A/D      : +/- Y")
@@ -91,33 +90,47 @@ class KeyboardControl:
         # 2. Main Loop (Input)
         while rclpy.ok():
             # A. Get Image & Draw UI Overlay
-            window = np.zeros((480, 640, 3), dtype=np.uint8)
-            cv2.putText(window, "Keyboard Control", (50, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+            window = np.zeros((540, 640, 3), dtype=np.uint8)
+            cv2.putText(window, "Click the window to control.", (10, 250),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+            input_lines = [
+                "  W/S      : +/- X",
+                "  A/D      : +/- Y",
+                "  I/K      : +/- Z (Up/Down)",
+                "  Q/E      : +/- Roll",
+                "  U/O      : +/- Pitch",
+                "  J/L      : +/- Yaw",
+                "  R        : Return to Home",
+                "  Space    : Toggle Grasp",
+                "  0 / 9    : +/- Move Speed",
+                "  Esc      : Quit"
+            ]
+
+            start_y = 280
+            line_height = 25
+            for i, line in enumerate(input_lines):
+                y = start_y + i * line_height
+                cv2.putText(window, line, (10, y),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
             # Color based on IK success
             color = (0, 255, 0) if self.move_success else (0, 0, 255)
 
             # Add Text Overlay to Image for Feedback
             status_text1 = f"Arm Move Speed: {self.move_speed}%"
-            status_text2 = f"  X:{self.cur_x:.3f} Y:{self.cur_y:.3f} Z:{self.cur_z:.3f}"
-            status_text3 = f"  R:{self.cur_roll:.0f} P:{self.cur_pitch:.0f} Y:{self.cur_yaw:.0f}"
+            status_text2 = f"  X: {self.cur_x:.3f} Y: {self.cur_y:.3f} Z: {self.cur_z:.3f}"
+            status_text3 = f"  R: {self.cur_roll:.0f} P: {self.cur_pitch:.0f} Y: {self.cur_yaw:.0f}"
             status_text4 = f"IK Solve Success: {'Yes' if self.move_success else 'No'}"
-            status_text5 = f"  IK Error Threshold - Pos:{self.arm.ik_solver.pos_thresh:.2f}m, Ori:{self.arm.ik_solver.ori_thresh * 180.0 / 3.14159:.1f}deg"
-            
+            status_text5 = f"  IK Error Threshold - Pos: {self.arm.ik_solver.pos_thresh:.2f}m, Ori: {self.arm.ik_solver.ori_thresh * 180.0 / 3.14159:.1f}deg"
+            status_texts = [status_text1, status_text2, status_text3, status_text4, status_text5]
+
+            start_y = 50
             line_height = 30
-
-            cv2.putText(window, status_text1, (10, 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-            cv2.putText(window, status_text2, (10, 30 + line_height),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-            cv2.putText(window, status_text3, (10, 30 + 2*line_height),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-            cv2.putText(window, status_text4, (10, 30 + 4*line_height),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2),
-            cv2.putText(window, status_text5, (10, 30 + 5*line_height),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
-
-            cv2.imshow("Teleop View", window)
+            for i, text in enumerate(status_texts):
+                cv2.putText(window, text, (10, start_y + i * line_height),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+            
+            cv2.imshow("Keyboard Control", window)
 
             # B. Wait for Key (This is the Safe Input Method)
             # The script waits 50ms for a key. If no key, it loops again (updating video)
@@ -227,7 +240,7 @@ def main():
     print("Waiting for ROS2 nodes to connect...")
     time.sleep(2.0)
     try:
-        task.run_safe_teleop()
+        task.run_keyboard_control()
     except KeyboardInterrupt:
         print("Interrupted by user.")
     finally:
