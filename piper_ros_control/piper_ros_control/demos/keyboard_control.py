@@ -24,11 +24,16 @@ import numpy as np
 import cv2
 
 from piper_ros_control.nodes.piper_controller import PiperController
+from piper_ros_control.utils.ik_solver import Arm_IK
 
 class KeyboardControl:
     def __init__(self):
         # Initialize ROS nodes
         self.arm = PiperController('piper_arm_controller')
+        # Set the IK solver
+        self.ik_solver = Arm_IK()
+        self.arm.set_ik_solver(self.ik_solver)
+        
         # Configuration
         self.HOME_POSE = {'x': 0.2, 'y': 0.0, 'z': 0.2, 'roll': 0, 'pitch': 90, 'yaw': 0}
         # State Variables

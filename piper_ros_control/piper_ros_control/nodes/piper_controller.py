@@ -43,9 +43,6 @@ from geometry_msgs.msg import TransformStamped
 from pathlib import Path
 import sys
 
-# --- Import Setup ---
-from piper_ros_control.utils.ik_solver import Arm_IK
-
 # ==========================================
 #          Piper Physical Traits
 # ==========================================
@@ -132,7 +129,7 @@ class PiperController(Node):
         self.debug = debug
 
         # Define the IK solver
-        self.ik_solver = Arm_IK()
+        self.ik_solver = None
 
         # Gripper Constants
         self.MAX_OPENING = MAX_OPENING   # Fully open (m)
@@ -203,6 +200,11 @@ class PiperController(Node):
         self._enable_client = self.create_client(Enable, 'enable_srv')
 
         self.get_logger().info('PiperController initialized')
+
+    def set_ik_solver(self, ik_solver):
+        """Set the IK solver instance to be used for Cartesian control"""
+        self.ik_solver = ik_solver
+        self.get_logger().info('IK solver set for Cartesian control')
 
     # ==========================================
     #                Callbacks
@@ -386,6 +388,10 @@ class PiperController(Node):
             roll, pitch, yaw: Orientation (degrees)
             gripper: Optional gripper position override
         """
+
+        if self.ik_solver is None:
+            self.get_logger().error("IK solver not set. Cannot execute Cartesian move.")
+            return False
 
         x = float(x)
         y = float(y)
